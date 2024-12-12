@@ -1,13 +1,11 @@
 import nltk
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 import re
 import pandas as pd
 
 class TextPreprocessor:
     def __init__(self):
-        # Download required NLTK data
-        nltk.download('punkt')
+        # Download stopwords
         nltk.download('stopwords')
         self.stop_words = set(stopwords.words('english'))
     
@@ -22,8 +20,8 @@ class TextPreprocessor:
         # Remove special characters and digits
         text = re.sub(r'[^a-zA-Z\s]', '', text)
         
-        # Tokenize
-        tokens = word_tokenize(text)
+        # Split into words (simple tokenization)
+        tokens = text.split()
         
         # Remove stopwords
         tokens = [t for t in tokens if t not in self.stop_words]
