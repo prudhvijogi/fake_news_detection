@@ -3,7 +3,9 @@ import pandas as pd
 import os
 from text_processor import TextPreprocessor
 from model_trainer import ModelTrainer
-from utils.visualization import create_confidence_gauge, create_key_features_chart
+
+# Import visualization functions directly from local utils package
+from src.utils.visualization import create_confidence_gauge, create_key_features_chart
 
 # Initialize processors
 @st.cache_resource
