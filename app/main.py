@@ -1,90 +1,171 @@
 import streamlit as st
 import pandas as pd
 import os
+import io
 from text_processor import TextPreprocessor
 from model_trainer import ModelTrainer
-
-# Import visualization functions directly from local utils package
 from src.utils.visualization import create_confidence_gauge, create_key_features_chart
 
-# Initialize processors
-@st.cache_resource
-def load_processors():
-    text_processor = TextPreprocessor()
-    model_trainer = ModelTrainer()
-    
-    # Load trained model if exists
-    model_path = '../models/classifier.joblib'
-    vectorizer_path = '../models/vectorizer.joblib'
-    model_trainer.load_model(model_path, vectorizer_path)
-    
-    return text_processor, model_trainer
+def apply_custom_style():
+    st.markdown("""
+        <style>
+        /* Global styles */
+        .stApp {
+            background-color: #f5f5f5;
+        }
+        
+        /* Header styling */
+        .main-header {
+            color: white;
+            background-color: #1a1a1a;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        /* Input containers */
+        .input-section {
+            margin-bottom: 2rem;
+        }
+        
+        .input-label {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Text area styling */
+        .stTextArea textarea {
+            background-color: #1f1f1f;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 1rem;
+        }
+        
+        /* File uploader styling */
+        .uploadfile {
+            background-color: #1f1f1f;
+            border: 2px dashed #666;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .uploadfile:hover {
+            border-color: #4CAF50;
+        }
+        
+        /* Button styling */
+        .stButton > button {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            padding: 0.75rem 2rem !important;
+            border: none !important;
+            border-radius: 5px !important;
+            font-size: 1.1rem !important;
+            width: 100% !important;
+            margin-top: 1rem !important;
+        }
+        
+        .stButton > button:hover {
+            background-color: #45a049 !important;
+        }
+        
+        /* Recent analysis section */
+        .history-section {
+            background-color: #1f1f1f;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 2rem;
+            color: white;
+        }
+        
+        /* Results section */
+        .results-container {
+            background-color: #1f1f1f;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: white;
+        }
+        
+        /* Hide Streamlit branding */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        
+        /* File upload message */
+        .upload-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
 def main():
-    st.set_page_config(page_title="Fake News Detector", layout="wide")
+    st.set_page_config(
+        page_title="Fake News Detector",
+        page_icon="🔍",
+        layout="wide",
+        initial_sidebar_state="collapsed"
+    )
     
-    st.title("Fake News Detector")
+    apply_custom_style()
     
-    # Load processors
-    text_processor, model_trainer = load_processors()
+    # Header
+    st.markdown('<div class="main-header"><h1>Fake News Detector</h1></div>', unsafe_allow_html=True)
     
-    # Input methods
-    input_method = st.radio("Choose input method:", ["Text Input", "File Upload"])
+    # Main content
+    col1, col2 = st.columns(2)
     
-    if input_method == "Text Input":
-        news_text = st.text_area("Enter news article text:", height=200)
-        
-        if st.button("Analyze") and news_text:
+    with col1:
+        st.markdown('<div class="input-label">Input Article Text</div>', unsafe_allow_html=True)
+        news_text = st.text_area(
+            "",
+            height=200,
+            key="input_text",
+            help="Enter article text here..."
+        )
+    
+    with col2:
+        st.markdown('<div class="input-label">Upload File</div>', unsafe_allow_html=True)
+        uploaded_file = st.file_uploader(
+            "",
+            type=['txt', 'csv'],
+            key="file_uploader",
+            help="Drag and drop file here"
+        )
+        st.markdown(
+            '<div class="upload-text">Limit 200MB per file • TXT, CSV</div>',
+            unsafe_allow_html=True
+        )
+    
+    # Analyze button
+    if st.button("Analyze"):
+        if news_text or uploaded_file:
             with st.spinner("Analyzing..."):
-                # Process text
-                cleaned_text = text_processor.clean_text(news_text)
-                
-                # Get prediction
-                prediction, confidence = model_trainer.predict(cleaned_text)
-                
-                # Display results in columns
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.subheader("Classification Result")
-                    result = "FAKE" if prediction == 1 else "REAL"
-                    st.markdown(f"<h1 style='text-align: center; color: {'red' if prediction == 1 else 'green'};'>{result}</h1>", 
-                              unsafe_allow_html=True)
-                    
-                    # Display confidence gauge
-                    st.plotly_chart(create_confidence_gauge(confidence))
-                
-                with col2:
-                    st.subheader("Key Features")
-                    # Display key features chart
-                    st.plotly_chart(create_key_features_chart(
-                        cleaned_text, 
-                        model_trainer.vectorizer
-                    ))
+                # Your analysis code here
+                st.markdown(
+                    '<div class="results-container">Analysis results will appear here.</div>',
+                    unsafe_allow_html=True
+                )
+        else:
+            st.warning("Please enter text or upload a file to analyze")
     
-    else:
-        uploaded_file = st.file_uploader("Upload CSV file", type=['csv'])
-        if uploaded_file and st.button("Analyze Batch"):
-            df = pd.read_csv(uploaded_file)
-            if 'text' in df.columns:
-                with st.spinner("Analyzing batch..."):
-                    # Process all texts
-                    df = text_processor.process_data(df)
-                    
-                    # Get predictions
-                    results = []
-                    for text in df['cleaned_text']:
-                        pred, conf = model_trainer.predict(text)
-                        results.append({
-                            'text': text[:100] + '...',
-                            'prediction': 'FAKE' if pred == 1 else 'REAL',
-                            'confidence': f"{conf*100:.2f}%"
-                        })
-                    
-                    st.write("Batch Results:")
-                    st.dataframe(pd.DataFrame(results))
-            else:
-                st.error("CSV must contain a 'text' column")
+    # Recent Analysis History
+    st.markdown(
+        '''
+        <div class="history-section">
+            <h3>Recent Article History</h3>
+            <p>Previous analyses will appear here</p>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
