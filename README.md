@@ -54,8 +54,5 @@ fake_news_detector/
 
 To train a new model:
 1. Place your dataset in `data/raw/`
-2. Run the notebook in `notebooks/model_development.ipynb`
+2. Run the notebook in `notebooks/model_development.py`
 3. Trained model will be saved in `models/`
-
-## License
-MIT License
