@@ -148,20 +148,6 @@ def apply_custom_style():
             font-size: 1rem !important;
         }}
         
-        /* File uploader styling */
-        .uploadfile {{
-            background-color: var(--container-bg);
-            border: 2px dashed var(--border-color);
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            color: var(--text-color);
-        }}
-        
-        .uploadfile:hover {{
-            border-color: #4CAF50;
-        }}
-        
         /* Button styling */
         .stButton > button {{
             background-color: #4CAF50 !important;
@@ -183,21 +169,6 @@ def apply_custom_style():
             background-color: #45a049 !important;
         }}
         
-        /* Recent analysis section */
-        .history-section {{
-            background-color: var(--container-bg);
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 2rem;
-            color: var(--text-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }}
-        
-        .history-section h3 {{
-            color: var(--heading-color) !important;
-            margin-bottom: 1rem;
-        }}
-        
         /* Results section */
         .results-container {{
             background-color: var(--container-bg);
@@ -206,6 +177,24 @@ def apply_custom_style():
             margin-top: 2rem;
             color: var(--text-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        
+        /* Prediction box styling */
+        .prediction-box {{
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }}
+        
+        .prediction-FAKE {{
+            background-color: rgba(255, 0, 0, 0.1);
+            border: 2px solid rgba(255, 0, 0, 0.5);
+        }}
+        
+        .prediction-REAL {{
+            background-color: rgba(0, 255, 0, 0.1);
+            border: 2px solid rgba(0, 255, 0, 0.5);
         }}
         
         /* Hide Streamlit branding */
@@ -229,6 +218,31 @@ def apply_custom_style():
         </style>
     """, unsafe_allow_html=True)
 
+def process_text(text, model_trainer):
+    """Process and analyze the input text."""
+    try:
+        # Initialize text processor
+        text_processor = TextPreprocessor()
+        
+        # Preprocess the text
+        processed_text = text_processor.process_text(text)
+        
+        # Get prediction and confidence
+        prediction, confidence = model_trainer.predict(processed_text)
+        
+        # Get feature importance if available
+        features = model_trainer.get_feature_importance(processed_text)
+        
+        return {
+            'prediction': prediction,
+            'confidence': confidence,
+            'features': features,
+            'text': text[:200] + '...' if len(text) > 200 else text
+        }
+    except Exception as e:
+        st.error(f"Error during analysis: {str(e)}")
+        return None
+
 def toggle_theme():
     st.session_state.theme = 'dark' if st.session_state.theme == 'light' else 'light'
     st.rerun()
@@ -243,6 +257,9 @@ def main():
     
     initialize_theme()
     apply_custom_style()
+    
+    # Initialize model trainer
+    model_trainer = ModelTrainer()
     
     # Container for the theme toggle and GitHub link
     col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 0.2, 0.2])
@@ -289,29 +306,46 @@ def main():
             '<div class="upload-text">Limit 200MB per file • TXT, CSV</div>',
             unsafe_allow_html=True
         )
+        
+        if uploaded_file:
+            try:
+                content = uploaded_file.getvalue().decode()
+                news_text = content
+                st.markdown('<div class="upload-success">File uploaded successfully!</div>', unsafe_allow_html=True)
+            except Exception as e:
+                st.error("Error reading file. Please make sure it's a valid text file.")
     
     # Analyze button
     if st.button("Analyze"):
-        if news_text or uploaded_file:
+        if news_text:
             with st.spinner("Analyzing..."):
-                # Your analysis code here
-                st.markdown(
-                    '<div class="results-container">Analysis results will appear here.</div>',
-                    unsafe_allow_html=True
-                )
+                results = process_text(news_text, model_trainer)
+                if results:
+                    # Display results
+                    prediction = results['prediction']
+                    confidence = results['confidence']
+                    features = results.get('features', None)
+                    
+                    # Prediction box
+                    st.markdown(
+                        f'''
+                        <div class="prediction-box prediction-{prediction}">
+                            <h2>Prediction: {prediction}</h2>
+                            <div class="confidence">Confidence: {confidence:.2f}%</div>
+                        </div>
+                        ''',
+                        unsafe_allow_html=True
+                    )
+                    
+                    # Feature importance
+                    if features:
+                        st.markdown("### Key Features")
+                        create_key_features_chart(features)
+                    
+                    # Confidence gauge
+                    create_confidence_gauge(confidence)
         else:
             st.warning("Please enter text or upload a file to analyze")
-    
-    # Recent Analysis History
-    st.markdown(
-        '''
-        <div class="history-section">
-            <h3>Recent Article History</h3>
-            <p>Previous analyses will appear here</p>
-        </div>
-        ''',
-        unsafe_allow_html=True
-    )
 
 if __name__ == "__main__":
     main()

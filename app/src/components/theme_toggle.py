@@ -1,61 +1,20 @@
 import streamlit as st
 
 def render_theme_toggle():
-    st.markdown("""
-        <div class="theme-toggle">
-            <button onclick="toggleTheme()" class="theme-toggle-button">
-                <span class="light-icon">☀️</span>
-                <span class="dark-icon">🌙</span>
-            </button>
-        </div>
-        <style>
-            .theme-toggle {
-                position: fixed;
-                top: 1rem;
-                right: 1rem;
-                z-index: 1000;
-            }
-            
-            .theme-toggle-button {
-                background: var(--bg-secondary);
-                border: 1px solid var(--border-color);
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s ease;
-            }
-            
-            .theme-toggle-button:hover {
-                transform: scale(1.1);
-            }
-            
-            .dark-icon {
-                display: none;
-            }
-            
-            [data-theme="dark"] .light-icon {
-                display: none;
-            }
-            
-            [data-theme="dark"] .dark-icon {
-                display: block;
-            }
-        </style>
-        <script>
-            function toggleTheme() {
-                const body = document.body;
-                const currentTheme = body.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                body.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-            }
-            
-            // Set initial theme
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
-        </script>
-    """, unsafe_allow_html=True)
+    col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 0.2, 0.2])
+    with col5:
+        theme_icon = "🌙" if st.session_state.theme == 'light' else "☀️"
+        if st.button(theme_icon, key="theme_toggle"):
+            st.session_state.theme = 'dark' if st.session_state.theme == 'light' else 'light'
+            st.rerun()
+    with col6:
+        st.markdown(
+            '''
+            <a href="https://github.com/yourusername/fake_news_detection" target="_blank" class="github-link">
+                <svg class="github-icon" height="24" width="24" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+            </a>
+            ''',
+            unsafe_allow_html=True
+        )

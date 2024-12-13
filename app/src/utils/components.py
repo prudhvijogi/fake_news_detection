@@ -1,134 +1,230 @@
-import streamlit as st
-import plotly.graph_objects as go
-from datetime import datetime
+def get_theme_styles(is_dark_mode):
+    """Get theme-specific styles"""
+    if is_dark_mode:
+        return {
+            'bg_color': '#1a1a1a',
+            'text_color': '#ffffff',
+            'secondary_bg': '#2d2d2d',
+            'accent_color': '#4CAF50',
+            'accent_hover': '#45a049',
+            'border_color': '#404040',
+            'input_bg': '#333333',
+            'error_color': '#ff4444',
+            'success_color': '#00C851',
+            'warning_color': '#ffbb33',
+            'info_color': '#33b5e5'
+        }
+    else:
+        return {
+            'bg_color': '#ffffff',
+            'text_color': '#333333',
+            'secondary_bg': '#f5f5f5',
+            'accent_color': '#2e7d32',
+            'accent_hover': '#1b5e20',
+            'border_color': '#e0e0e0',
+            'input_bg': '#ffffff',
+            'error_color': '#f44336',
+            'success_color': '#4CAF50',
+            'warning_color': '#ff9800',
+            'info_color': '#2196f3'
+        }
 
-def create_theme_toggle(is_dark_mode):
-    """Create theme toggle button"""
-    icon = "🌙" if is_dark_mode else "☀️"
-    text = "Light Mode" if is_dark_mode else "Dark Mode"
+def get_css(theme):
+    """Generate CSS based on theme"""
     return f"""
-        <div class="theme-toggle" onclick="handleThemeToggle()">
-            {icon} {text}
-        </div>
-        <script>
-        function handleThemeToggle() {{
-            const queryParams = new URLSearchParams(window.location.search);
-            const currentTheme = queryParams.get('theme') || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            queryParams.set('theme', newTheme);
-            window.location.search = queryParams.toString();
+        <style>
+        /* Global styles */
+        .stApp {{
+            background-color: {theme['bg_color']};
+            color: {theme['text_color']};
         }}
-        </script>
+        
+        /* Theme toggle button */
+        .theme-toggle {{
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            background-color: {theme['secondary_bg']};
+            border: 1px solid {theme['border_color']};
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }}
+        
+        .theme-toggle:hover {{
+            background-color: {theme['accent_color']};
+            color: white;
+        }}
+        
+        /* Header styling */
+        .main-header {{
+            background-color: {theme['secondary_bg']};
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        
+        .header-title {{
+            color: {theme['text_color']};
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }}
+        
+        .header-subtitle {{
+            color: {theme['text_color']}aa;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }}
+        
+        /* Input containers */
+        .input-container {{
+            background-color: {theme['secondary_bg']};
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }}
+        
+        .input-label {{
+            color: {theme['text_color']};
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }}
+        
+        /* Text area styling */
+        .stTextArea textarea {{
+            background-color: {theme['input_bg']} !important;
+            color: {theme['text_color']} !important;
+            border: 1px solid {theme['border_color']} !important;
+            border-radius: 8px !important;
+            padding: 1rem !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease !important;
+        }}
+        
+        .stTextArea textarea:focus {{
+            border-color: {theme['accent_color']} !important;
+            box-shadow: 0 0 0 2px {theme['accent_color']}33 !important;
+        }}
+        
+        /* File uploader styling */
+        .uploadfile {{
+            background-color: {theme['input_bg']};
+            border: 2px dashed {theme['border_color']};
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }}
+        
+        .uploadfile:hover {{
+            border-color: {theme['accent_color']};
+        }}
+        
+        /* Button styling */
+        .stButton > button {{
+            background-color: {theme['accent_color']} !important;
+            color: white !important;
+            padding: 0.75rem 2rem !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            width: 100% !important;
+            transition: all 0.3s ease !important;
+        }}
+        
+        .stButton > button:hover {{
+            background-color: {theme['accent_hover']} !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px {theme['accent_color']}66;
+        }}
+        
+        /* Results section */
+        .results-container {{
+            background-color: {theme['secondary_bg']};
+            border-radius: 10px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }}
+        
+        .result-card {{
+            background-color: {theme['input_bg']};
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid {theme['border_color']};
+            transition: all 0.3s ease;
+        }}
+        
+        .result-card:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }}
+        
+        /* Metrics styling */
+        .metric-container {{
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }}
+        
+        .metric-card {{
+            background-color: {theme['input_bg']};
+            border-radius: 8px;
+            padding: 1rem;
+            flex: 1;
+            min-width: 200px;
+            border: 1px solid {theme['border_color']};
+        }}
+        
+        .metric-title {{
+            font-size: 0.9rem;
+            color: {theme['text_color']}aa;
+            margin-bottom: 0.5rem;
+        }}
+        
+        .metric-value {{
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: {theme['text_color']};
+        }}
+        
+        /* Progress bar */
+        .progress-container {{
+            width: 100%;
+            height: 4px;
+            background-color: {theme['border_color']};
+            border-radius: 2px;
+            overflow: hidden;
+        }}
+        
+        .progress-bar {{
+            height: 100%;
+            background-color: {theme['accent_color']};
+            transition: width 0.3s ease;
+        }}
+        
+        /* Hide Streamlit elements */
+        #MainMenu {{visibility: hidden;}}
+        footer {{visibility: hidden;}}
+        header {{visibility: hidden;}}
+        
+        /* Animations */
+        @keyframes fadeIn {{
+            from {{ opacity: 0; transform: translateY(10px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
+        }}
+        
+        .animate-fade-in {{
+            animation: fadeIn 0.5s ease forwards;
+        }}
+        </style>
     """
-
-def create_header():
-    """Create application header"""
-    return """
-        <div class="main-header">
-            <h1 class="header-title">Fake News Detector</h1>
-            <p class="header-subtitle">
-                Analyze news articles using advanced machine learning algorithms
-            </p>
-        </div>
-    """
-
-def create_result_card(title, content, icon="📊"):
-    """Create a styled result card"""
-    return f"""
-        <div class="result-card animate-fade-in">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="font-size: 1.5rem;">{icon}</div>
-                <div>
-                    <div style="font-weight: 600;">{title}</div>
-                    <div>{content}</div>
-                </div>
-            </div>
-        </div>
-    """
-
-def create_metric_card(label, value, delta=None, prefix="", suffix=""):
-    """Create a metric card with optional delta"""
-    delta_html = f"""
-        <div style="color: {'#00C851' if delta > 0 else '#ff4444'}; font-size: 0.9rem;">
-            {'+' if delta > 0 else ''}{delta}{suffix}
-        </div>
-    """ if delta is not None else ""
-    
-    return f"""
-        <div class="metric-card animate-fade-in">
-            <div class="metric-title">{label}</div>
-            <div class="metric-value">{prefix}{value}{suffix}</div>
-            {delta_html}
-        </div>
-    """
-
-def create_progress_bar(progress, label=""):
-    """Create a styled progress bar"""
-    return f"""
-        <div style="margin: 1rem 0;">
-            <div style="margin-bottom: 0.5rem; font-size: 0.9rem;">{label}</div>
-            <div class="progress-container">
-                <div class="progress-bar" style="width: {progress}%;"></div>
-            </div>
-        </div>
-    """
-
-def create_confidence_gauge_v2(confidence_score):
-    """Create an enhanced confidence gauge"""
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number+delta",
-        value=confidence_score * 100,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        gauge={
-            'axis': {'range': [0, 100]},
-            'bar': {'color': "#4CAF50"},
-            'steps': [
-                {'range': [0, 33], 'color': "#ffcdd2"},
-                {'range': [33, 66], 'color': "#fff9c4"},
-                {'range': [66, 100], 'color': "#c8e6c9"}
-            ],
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': 80
-            }
-        },
-        title={'text': "Confidence Score"}
-    ))
-    
-    fig.update_layout(
-        height=300,
-        margin=dict(l=10, r=10, t=50, b=10),
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)'
-    )
-    
-    return fig
-
-def store_analysis_history(text, result, confidence):
-    """Store analysis history in session state"""
-    if 'analysis_history' not in st.session_state:
-        st.session_state.analysis_history = []
-    
-    st.session_state.analysis_history.append({
-        'text': text[:100] + "..." if len(text) > 100 else text,
-        'result': result,
-        'confidence': confidence,
-        'timestamp': datetime.now()
-    })
-
-def display_analysis_history():
-    """Display analysis history"""
-    if 'analysis_history' not in st.session_state or not st.session_state.analysis_history:
-        st.info("No analysis history available")
-        return
-    
-    for analysis in reversed(st.session_state.analysis_history[-5:]):
-        st.markdown(create_result_card(
-            title=f"Analysis from {analysis['timestamp'].strftime('%H:%M:%S')}",
-            content=f"""
-                Result: {analysis['result']} (Confidence: {analysis['confidence']:.1f}%)
-                <br>Text: {analysis['text']}
-            """,
-            icon="📝"
-        ), unsafe_allow_html=True)

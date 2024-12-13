@@ -1,47 +1,27 @@
-def get_theme_variables():
-    return """
-        :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f5f5f5;
-            --text-primary: #1a1a1a;
-            --text-secondary: #666666;
-            --accent-color: #2196F3;
-            --border-color: #e0e0e0;
-        }
-        
-        [data-theme="dark"] {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --accent-color: #64B5F6;
-            --border-color: #404040;
-        }
-    """
+import streamlit as st
 
 def apply_theme_styles():
-    return f"""
+    theme = st.session_state.get('theme', 'light')
+    
+    st.markdown(f"""
         <style>
-        {get_theme_variables()}
+        /* Theme variables */
+        :root {{
+            --bg-color: {('#f5f5f5' if theme == 'light' else '#1a1a1a')};
+            --text-color: {('#333333' if theme == 'light' else '#ffffff')};
+            --container-bg: {('#ffffff' if theme == 'light' else '#2d2d2d')};
+            --border-color: {('#dddddd' if theme == 'light' else '#404040')};
+            --input-text-color: {('#000000' if theme == 'light' else '#ffffff')};
+            --heading-color: {('#000000' if theme == 'light' else '#ffffff')};
+        }}
         
+        /* Global styles */
         .stApp {{
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             transition: all 0.3s ease;
         }}
         
-        /* Hide Streamlit branding */
-        #MainMenu {{visibility: hidden;}}
-        footer {{visibility: hidden;}}
-        header {{visibility: hidden;}}
-        
-        /* Charts and visualizations */
-        .js-plotly-plot {{
-            background-color: var(--bg-secondary) !important;
-        }}
-        
-        .js-plotly-plot .plotly .main-svg {{
-            background-color: transparent !important;
-        }}
+        /* Add more theme-specific styles here */
         </style>
-    """
+    """, unsafe_allow_html=True)

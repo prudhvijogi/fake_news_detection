@@ -1,8 +1,12 @@
 import streamlit as st
 
-def render_header(theme):
-    st.markdown(f"""
-        <div class="header">
-            <h1 class="header-title">Fake News Detector</h1>
+def render_header():
+    st.markdown(
+        '''
+        <div class="main-header">
+            <h1>Fake News Detector</h1>
+            <p>Detect fake news using advanced machine learning</p>
         </div>
-    """, unsafe_allow_html=True)
+        ''',
+        unsafe_allow_html=True
+    )
